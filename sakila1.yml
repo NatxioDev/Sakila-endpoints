@@ -1,0 +1,363 @@
+swagger: "2.0"
+info:
+  title: "Sakila Video Store"
+  description: "Endpoints for the 'Sakila' Video Store System \n\n Team:\n- Carranza Torrico Juan Manuel\n- Paz Sea Yamil Ignacio\n- Saavedra Ayarde Stephanie Belén"
+  version: "1.0.0"
+host: "api.sakila"
+basePath: "/v2"
+externalDocs:
+  description: "Find out more about Sakila DB"
+  url: "https://dev.mysql.com/doc/sakila/en/"
+
+paths:
+  /customer/login:
+    get:
+      tags:
+      - "customer"
+      summary: "Logs customer into the system"
+      description: "Logs user into the system with username and pass"
+      operationId: "loginCustomer"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "username"
+        in: "query"
+        description: "The customer name for login"
+        required: true
+        type: "string"
+      - name: "password"
+        in: "query"
+        description: "The password for login in clear text"
+        required: true
+        type: "string"
+      responses:
+        "200":
+          description: "Successful L"
+          schema:
+            type: "string"
+          headers:
+            X-Rate-Limit:
+              type: "integer"
+              format: "int32"
+              description: "Calls every hour allowed when customer calls"
+            X-Expires-After:
+              type: "string"
+              format: "date-time"
+              description: "Time in UTC format when token expires"
+        "400":
+          description: "Invalid username/password"
+  
+  /customer/logout:
+    get:
+      tags:
+      - "customer"
+      summary: "Logs out current logged in customer session"
+      description: ""
+      operationId: "logoutCustomer"
+      produces:
+      - "application/json"
+      parameters: []
+      responses:
+        default:
+          description: "Successful Logout"
+  
+  /customer:
+    post:
+      tags:
+      - "customer"
+      summary: "Create customer"
+      description: "This can only be done by the logged in customer."
+      operationId: "createCustomer"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Created customer object"
+        required: true
+        schema:
+          $ref: "#/definitions/Customer"
+      responses:
+        default:
+          description: "Successful operation"
+  
+  /customer/{customerId}/address:
+    post:
+      tags:
+      - "customer"
+      summary: "Update Customer's address"
+      description: "Update address of customer for checkout cart"
+      operationId: "updateCustomerAddress"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Update customer object"
+        required: true
+        schema:
+          $ref: "#/definitions/Customer"
+      responses:
+        default:
+          description: "Successful operation"
+
+  /film/{status}:
+    get:
+      tags:
+      - "film"
+      summary: "Get a list of the films"
+      description: "Get a list of all films by Country"
+      operationId: "getFilm"
+      consumes:
+      - "application/xml"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "We see a list of film objets"
+        required: true
+        schema:
+          $ref: "#/definitions/Film"
+      responses:
+        "403":
+          description: "Forbidden"
+  
+  /film/Actor={ActorName}:
+    get:
+      tags:
+      - "film"
+      summary: "Finds Film by Actors"
+      description: "Multiple Actors are in Multiple films"
+      operationId: "findFilmByActor"
+      produces:
+      - "application/xml"
+      - "application/json"
+      parameters:
+      - name: "ActorName"
+        in: "query"
+        description: "ActorName values that need to be considered for filter"
+        required: true
+        type: "array"
+      responses:
+        "200":
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Film"
+        "404":
+          description: "File not found"
+      
+  /film/title={titleName}:
+    get:
+      tags:
+      - "film"
+      summary: "Get films by title"
+      description: "Multiple titles are in multiple films"
+      operationId: "findFilmByTitle"
+      produces:
+      - "application/json"
+      parameters:
+        - name: "TitleFilm"
+          in: "query"
+          description: "Film's title "
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "successful operation"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Film"
+        "404":
+          description: "File not found"
+      
+  /film/Actor={ActorName}?film={filmName}:
+    get:
+      tags:
+      - "film"
+      summary: "Finds Film by Actors and film's name"
+      description: "Multiple Actors are in Multiple films and similarys titles for multiple films"
+      operationId: "findFilmByActorAndTitle"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "ActorName, filmName"
+        in: "query"
+        description: "ActorName values that need to be considered for filter"
+        required: true
+        type: "array"
+      responses:
+        "200":
+          description: "Successful Search"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Film"
+        "404":
+          description: "File not found"
+
+  ###/film/cart:
+    # post:
+    #   tags:
+    #   - "Film"
+    #   summary: "Place an order for a pet"
+    #   description: ""
+    #   operationId: "placeOrder"
+    #   produces:
+    #   - "application/xml"
+    #   - "application/json"
+    #   parameters:
+    #   - in: "body"
+    #     name: "body"
+    #     description: "Order placed for purchasing the pet"
+    #     required: true
+    #     schema:
+    #       $ref: "#/definitions/Film"
+    #   responses:
+    #     "200":
+    #       description: "Successful operation"
+    #       schema:
+    #         $ref: "#/definitions/Film"
+    #     "400":
+    #       description: "Invalid Order"
+  ###
+securityDefinitions:
+  petstore_auth:
+    type: "oauth2"
+    authorizationUrl: "http://api.sakila/oauth/dialog"
+    flow: "implicit"
+    scopes:
+      write:pets: "Modify films in your account"
+      read:pets: "Read your Films"
+  api_key:
+    type: "apiKey"
+    name: "api_key"
+    in: "header"
+
+definitions:
+  Customer: 
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        description: "Unique Identifier for Customer"
+      store_id:
+        type: "integer"
+        description: "Unique Identifier for Customer's Store"
+      first_name:
+        type: "string"
+        description: "Customer's first name"
+      last_name:
+        type: "string"
+        description: "Customer's last name"
+      email:
+        type: "string"
+        description: "Customer's email"
+      address_id:
+        type: "integer"
+        description: "Unique Identifier for Customer's address"
+      active:
+        default: 1
+        type: "integer"
+        description: "Customer's status"
+      create_date:
+        type: "string"
+        format: "date-time"
+        description: "Customer's create date"
+      last_update:
+        type: "string"
+        format: "date-time"
+        description: "Customer's last update"
+      
+  Film:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        description: "Unique Identifier for Film"
+      title:
+        type: "string"
+        description: "Film's title"
+      description:
+        type: "string"
+        description: "Film's description"
+      release_year:
+        type: "string"
+        format: "year"
+        description: "Film's release year"
+      language_id:
+        type: "integer"
+        description: "Unique Identifier for Film's language"
+      original_language_id:
+        type: "integer"
+        description: "Unique Identifier for Film's original language"
+      rental_duration:
+        type: "integer"
+        description: "Film's rental duration"
+      rental_rate:
+        type: "number"
+        format: "double"
+        description: "Film's rental date"
+      length:
+        type: "integer"
+        description: "Film's length"
+      replacement_cost:
+        type: "number"
+        format: "double"
+        description: "Film's replacement cost"
+      rating:
+        type: "string"
+        description: "Film's rating"
+      special_features:
+        type: "array"
+        items: 
+          type: "string"
+        description: "Film's special features"
+      last_update:
+        type: "string"
+        format: "date"
+        description: "Film's last update"
+
+  Inventory: 
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        description: "Unique Identifier for Inventory"
+      film_id:
+        type: "integer"
+        description: "Unique Identifier for Inventory's Film"
+      store_id:
+        type: "integer"
+        description: "Unique Identifier for Inventory's Store"
+      last_update:
+        type: "string"
+        format: "date-time"
+        description: "Customer's last update"
+  
+  Rental: 
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        description: "Unique Identifier for Rental"
+      inventory_id:
+        type: "integer"
+        description: "Unique Identifier for Rental's inventory"
+      customer_id:
+        type: "integer"
+        description: "Unique Identifier for Rental's customer"
+      return_date:
+        type: "string"
+        format: "date-time"
+        description: "Rental's return date"
+      staff_id:
+        type: "integer"
+        description: "Unique Identifier for Rental's staff"
+      last_update:
+        type: "string"
+        format: "date-time"
+        description: "Rental's last update"
