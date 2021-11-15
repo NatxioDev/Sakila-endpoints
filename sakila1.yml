@@ -10,6 +10,26 @@ externalDocs:
   url: "https://dev.mysql.com/doc/sakila/en/"
 
 paths:
+  /customer:
+    post:
+      tags:
+      - "customer"
+      summary: "Create customer"
+      description: "This can only be done by the logged in customer."
+      operationId: "createCustomer"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Created customer object"
+        required: true
+        schema:
+          $ref: "#/definitions/Customer"
+      responses:
+        default:
+          description: "Successful operation"
+
   /customer/login:
     get:
       tags:
@@ -38,7 +58,6 @@ paths:
           headers:
             X-Rate-Limit:
               type: "integer"
-              format: "int32"
               description: "Calls every hour allowed when customer calls"
             X-Expires-After:
               type: "string"
@@ -60,51 +79,45 @@ paths:
       responses:
         default:
           description: "Successful Logout"
-  
-  /customer:
-    post:
-      tags:
-      - "customer"
-      summary: "Create customer"
-      description: "This can only be done by the logged in customer."
-      operationId: "createCustomer"
-      produces:
-      - "application/json"
-      parameters:
-      - in: "body"
-        name: "body"
-        description: "Created customer object"
-        required: true
-        schema:
-          $ref: "#/definitions/Customer"
-      responses:
-        default:
-          description: "Successful operation"
-  
-  /customer/{customerId}/address:
-    post:
+
+  /customer/{id}:
+    put:
       tags:
       - "customer"
       summary: "Update Customer's address"
-      description: "Update address of customer for checkout cart"
-      operationId: "updateCustomerAddress"
-      produces:
-      - "application/json"
+  
+      description: "Allows you to update address in an especific user. One should be updated at a time"
+      operationId: "updateCustomer"
+      
       parameters:
-      - in: "body"
-        name: "body"
-        description: "Update customer object"
+      - in: "path"
+        name: "id"
+        description: "ID ofuser to be updated"
+        type: "integer"
         required: true
-        schema:
-          $ref: "#/definitions/Customer"
+            
+      - in: "query"
+        name: "address"
+        description: "Field to be updated"
+        type: "string"
+        required: true
+        
+      - in: "query"
+        name: "value"
+        description: "New value of the previous field"
+        type: "string"
+        required: true
+      
       responses:
-        default:
-          description: "Successful operation"
-
-  /film/{status}:
+        202:
+          description: "Successful Request - User Updated"
+        404:
+          description: "Error - User Does Not Exist"
+    
+  /film/country:
     get:
       tags:
-      - "film"
+      - "Film"
       summary: "Get a list of the films"
       description: "Get a list of all films by Country"
       operationId: "getFilm"
@@ -126,7 +139,7 @@ paths:
   /film/Actor={ActorName}:
     get:
       tags:
-      - "film"
+      - "Film"
       summary: "Finds Film by Actors"
       description: "Multiple Actors are in Multiple films"
       operationId: "findFilmByActor"
@@ -152,14 +165,14 @@ paths:
   /film/title={titleName}:
     get:
       tags:
-      - "film"
+      - "Film"
       summary: "Get films by title"
       description: "Multiple titles are in multiple films"
       operationId: "findFilmByTitle"
       produces:
       - "application/json"
       parameters:
-        - name: "TitleFilm"
+        - name: "titleName"
           in: "query"
           description: "Film's title "
           required: true
@@ -177,7 +190,7 @@ paths:
   /film/Actor={ActorName}?film={filmName}:
     get:
       tags:
-      - "film"
+      - "Film"
       summary: "Finds Film by Actors and film's name"
       description: "Multiple Actors are in Multiple films and similarys titles for multiple films"
       operationId: "findFilmByActorAndTitle"
@@ -199,31 +212,154 @@ paths:
         "404":
           description: "File not found"
 
-  ###/film/cart:
-    # post:
-    #   tags:
-    #   - "Film"
-    #   summary: "Place an order for a pet"
-    #   description: ""
-    #   operationId: "placeOrder"
-    #   produces:
-    #   - "application/xml"
-    #   - "application/json"
-    #   parameters:
-    #   - in: "body"
-    #     name: "body"
-    #     description: "Order placed for purchasing the pet"
-    #     required: true
-    #     schema:
-    #       $ref: "#/definitions/Film"
-    #   responses:
-    #     "200":
-    #       description: "Successful operation"
-    #       schema:
-    #         $ref: "#/definitions/Film"
-    #     "400":
-    #       description: "Invalid Order"
-  ###
+  /cart:
+    get:
+      tags:
+      - "Cart"
+      summary: "Retrieve cart"
+      description: "Retrieve a list of all the items pending in your cart."
+      operationId: "getAllItems"
+      produces:
+      - "application/json"
+      
+      responses:
+        202:
+          description: "Successful Request - Retrieving items in Cart"
+          schema:
+            type: "array"
+            items:
+              $ref: "#/definitions/Film"
+    
+    post:
+      tags:
+      - "Cart"
+      summary: "Add new item in the cart"
+      description: " User indicates the Movie to add a new item in his cart"
+      operationId: "addItem"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+        - in: "query"
+          name: "name"
+          type: "string"
+          required: true
+
+        - in: "query"
+          name: "quantity"
+          description: "quantity of items to buy"
+          type: "number"
+          format: "double"
+          required: true
+          
+        - in: "query"
+          name: "price"
+          description: "Price of each item"
+          type: "number"
+          format: "double"
+          required: true
+          
+        - in: "query"
+          name: "discount"
+          description: "Discount on percentage rate"
+          type: "number"
+          format: "double"
+          required: true
+        
+      responses:
+        200:
+          description: "Successful Request - Item added to Cart"
+        405:    
+          description: "Failed Request"
+
+    delete:
+      tags:
+      - "Cart"
+      summary: "Reset your cart"
+      description: "Deletes all items in an existing cart."
+      operationId: "deleteAll"
+      produces:
+      - "application/json"
+      
+      responses:
+        202:
+          description: "Successful request - Cart has been reset."
+        401:
+          description: "Unauthorized to make such call."
+        500:
+          description: "Error while trying to reset. Try again."
+
+  /cart/{film_id}:    
+    delete:
+      tags:
+      - "Cart"
+      summary: "Delete an item"
+      description: "Deletes an item from the current cart."
+      operationId: "deleteItem"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      
+      - in: "query"
+        name: "cart_Id"
+        description: "Id of a customer's cart"
+        type: "integer"
+        required: true
+        
+      - in: "path"
+        name: "film_id"
+        description: "Id of item to be deleted"
+        type: "integer"
+        required: true
+      responses:
+        202:
+          description: "Successful Request - Item deleted"
+        404:
+          description: "Error - Item not found"
+
+  /payment:
+    post:
+      tags:
+      - "Rental and Payment"
+      summary: "Register Payment"
+      description: "Checkout cart"
+      operationId: "registerPayment"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Created payment object"
+        required: true
+        schema:
+          $ref: "#/definitions/Payment"
+      responses:
+        default:
+          description: "Successful operation"
+
+  /Rental:
+    post:
+      tags:
+      - "Rental and Payment"
+      summary: "Register Rental"
+      description: "Checkout cart"
+      operationId: "registerRental"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "Created rental object"
+        required: true
+        schema:
+          $ref: "#/definitions/Rental"
+      responses:
+        default:
+          description: "Successful operation"
+
 securityDefinitions:
   petstore_auth:
     type: "oauth2"
@@ -320,23 +456,6 @@ definitions:
         type: "string"
         format: "date"
         description: "Film's last update"
-
-  Inventory: 
-    type: "object"
-    properties:
-      id:
-        type: "integer"
-        description: "Unique Identifier for Inventory"
-      film_id:
-        type: "integer"
-        description: "Unique Identifier for Inventory's Film"
-      store_id:
-        type: "integer"
-        description: "Unique Identifier for Inventory's Store"
-      last_update:
-        type: "string"
-        format: "date-time"
-        description: "Customer's last update"
   
   Rental: 
     type: "object"
@@ -361,3 +480,31 @@ definitions:
         type: "string"
         format: "date-time"
         description: "Rental's last update"
+
+  Payment:
+    type: "object"
+    properties:
+      id:
+        type: "integer"
+        description: "Unique Identifier for Payment"
+      customer_id:
+        type: "integer"
+        description: "Unique Identifier for Payment's customer"
+      staff_id:
+        type: "integer"
+        description: "Unique Identifier for Payment's staff"
+      rental_id:
+        type: "integer"
+        description: "Unique Identifier for Payment's rental"
+      amount:
+        type: "number"
+        format: "double"
+        description: "Payment's amount"
+      payment_date:
+        type: "string"
+        format: "date-time"
+        description: "Payment date"
+      last_update:
+        type: "string"
+        format: "date-time"
+        description: "Payment's last update"
