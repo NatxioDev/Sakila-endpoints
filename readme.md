@@ -1,14 +1,17 @@
 # Endpoints Sakila Video Store
 
 
-- ✅ /Get/{title=titleName} - Filtrar según título  
-- ✅ /Get/{actor=actorName} - filtrar según actor 
+- ✅ Get - Filtrar según título  
+- ✅ Get - filtrar según actor 
 - ✅ Get - Filtrar según título y actor
 - ✅ Post - Crear usuario (Registro) 
-- ✅ /Post/login - Login 
-- ✅ /Post/logout - Logout
-- /Put/address - Actualizar dirección
-- ❔/Post/AddCart - Añadir ítem al carrito
-- ❔Delete - eliminar ítem del carrito
-- ✅/Get/film/{country=1} - Obtener películas según país
-- ❔Post - Confirmar Transacción
+- ✅ Post - Login 
+- ✅ Post - Logout
+- ✅ Put - Actualizar dirección
+- ✅ Post - Añadir ítem al carrito
+- ✅ Delete - Eliminar ítem del carrito
+- ✅ Delete - Eliminar todo el carrito
+- ✅ Get - Guardar Carrito
+- ✅ Get - Obtener películas según país
+- ✅ Post - Confirmar Transacción en Payment
+- ✅ Post - Confirmar Transacción en Rental
